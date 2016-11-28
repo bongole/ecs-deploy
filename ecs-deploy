@@ -91,6 +91,7 @@ VERBOSE=false
 TAGVAR=false
 AWS_CLI=$(which aws)
 AWS_ECS="$AWS_CLI --output json ecs"
+AWS_ECR="$AWS_CLI --output json ecr"
 
 # Loop through arguments, two at a time for key and value
 while [[ $# -gt 0 ]]
@@ -289,6 +290,14 @@ fi
 imageWithoutTag="$useImage"
 if [[ ! -z ${tag+undefined-guard} ]]; then
   useImage="$useImage:$tag"
+fi
+
+if [[ "$imageWithoutTag" =~ 'dkr.ecr' ]]; then
+  ECR_IMAGE=`$AWS_ECR describe-images --repository-name=$img | jq -r ".imageDetails[] | select(.imageTags[] == \"$tag\")"`
+  if [[ -z $ECR_IMAGE ]]; then
+    echo "ERROR: image not found in ECR. image = $useImage"
+    exit 1
+  fi
 fi
 
 echo "Using image name: $useImage"
