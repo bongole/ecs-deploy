@@ -229,7 +229,7 @@ function parseImageName() {
       fi
 
       if [[ "$imageWithoutTag" =~ 'dkr.ecr' ]]; then
-        ECR_IMAGE=`$AWS_ECR describe-images --repository-name=$img | jq -r ".imageDetails[] | select(.imageTags[] == \"$tag\")"`
+        ECR_IMAGE=`$AWS_ECR describe-images --repository-name=$img | jq -r ".imageDetails[] | .imageTags // [] | select(.[] == \"$tag\")"`
         if [[ -z $ECR_IMAGE ]]; then
           echo "ERROR: image not found in ECR. image = $useImage"
           exit 1
